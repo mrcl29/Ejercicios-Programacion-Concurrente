@@ -1,117 +1,167 @@
+##################### IMPORTS #####################
 import threading
 import time
 import random
+#####################
 
-# Semáforos y locks
-santa_sleep = threading.Semaphore(0)  # Despierta a Papá Noel cuando hay 3 elfos
-elves_waiting_room = threading.Semaphore(3)  # Máximo de 3 elfos en la sala de espera
-reindeers_arrival = threading.Semaphore(0)  # Avisa a Papá Noel cuando llegan todos los renos
-mutex = threading.Lock()  # Control de acceso a los contadores de elfos y renos
-elf_count_lock = threading.Lock()
-reindeer_count_lock = threading.Lock()
+##################### CONSTANTS GLOBALS #####################
+NUM_JOGUINES = 3  # Número de juguetes que debe construir cada elfo
+NUM_ELFS = 6  # Número de elfos
+CAPACITAT_SALA_ESPERA = 3  # Capacidad de la sala de espera
+NUM_RENS = 9  # Número de renos
+#####################
 
-# Variables compartidas
-elf_count = 0
-reindeer_count = 0
-elves_finished = 0
+##################### SEMÁFOROS #####################
+# Semáforo para hacer esperar al Papá Noel
+espera_PareNoel = threading.Semaphore(0)
+# Semáforo para controlar el acceso a la sala de espera
+sala_de_espera_elfs = threading.Semaphore(CAPACITAT_SALA_ESPERA)
+# Semáforo para permitir el acceso de los elfos solo después de resolver sus dudas
+espera_resolucion_dudas = threading.Semaphore(0)
+# Semáforo para enganchar los renos al trineo
+enganxar_rens = threading.Semaphore(0)
+# Semáforo de contadores de elfos y renos
+elf_mutex = threading.Semaphore(1)
+ren_mutex = threading.Semaphore(1)
+#####################
 
-NUM_JOGUINES = 3
-NUM_ELFS = 6
-CAPACITAT_SALA_ESPERA = 3
-NUM_RENS = 9
+##################### VARIABLES COMPARTIDAS #####################
+contador_elfs_dubtes = 0  # Contador de elfos con dudas
+contador_elfs_acabats = 0  # Contador de elfos que han terminado la ejecución
+contador_rens_arribats = 0  # Contador de renos que han llegado
+#####################
 
-class SantaClaus(threading.Thread):
+##################### DECLARACIÓN DE CLASES #####################
+
+
+class PareNoel(threading.Thread):
     def run(self):
-        global elf_count, reindeer_count
-        print("-------> El Pare Noel diu: Estic despert però me'n torn a jeure")# Comença la simulació
+        global contador_elfs_dubtes, contador_rens_arribats
+        print("-------> El Pare Noel diu: Estic despert però me'n torn a jeure")
         while True:
-            santa_sleep.acquire()  # Espera a ser despertado por el tercer elfo o el último reno
-            if elf_count == 3:
-                print("-------> El Pare Noel diu: Atendré els dubtes d'aquests 3")# El tercer elf l'ha despert
-                time.sleep(2)  # Simula el tiempo de respuesta
-                print("-------> El Pare Noel diu: Estic cansat me'n torn a jeure")# Ha resolt els tres dubtes
-                # Permitir a más elfos que tengan dudas entrar en la sala de espera
-                elf_count_lock.acquire()
-                elf_count = 0  # Resetea el conteo de elfos que hicieron preguntas
-                elf_count_lock.release()
+            espera_PareNoel.acquire()
 
-            if elves_finished == 6:
-                print("-------> Pare Noel diu: Les joguines estan llestes. I Els rens?")# Els elfs han acabat
+            # Verifica si es porque hay elfos con dudas
+            elf_mutex.acquire()
+            if contador_elfs_dubtes == CAPACITAT_SALA_ESPERA:
+                print("-------> El Pare Noel diu: Atendré els dubtes d'aquests 3")
+                # Simula la resolución de dudas
+                time.sleep(random.randint(1, 2))
+                contador_elfs_dubtes = 0  # Reinicia el contador de elfos con dudas
+                elf_mutex.release()
 
-            if elves_finished == 6 and reindeer_count == 9:
-                print("-------> Pare Noel diu: Enganxaré els rens i partiré")# Tots els rens han arribat
-                for _ in range(9):  # Engancha cada reno al trineo
-                    reindeers_arrival.release()
-                print("-------> El Pare Noel ha enganxat els rens, ha carregat les joguines i se'n va")# Ha acabat
+                for _ in range(CAPACITAT_SALA_ESPERA):
+                    espera_resolucion_dudas.release()  # Permite salir a los elfos
+                print("-------> El Pare Noel diu: Estic cansat me'n torn a jeure")
+            else:
+                elf_mutex.release()
+
+            # Verifica si todos los elfos han terminado
+            elf_mutex.acquire()
+            if contador_elfs_acabats == NUM_ELFS:
+                elf_mutex.release()
+                print("-------> Pare Noel diu: Les joguines estan llestes. I Els rens?")
+                ren_mutex.acquire()
+
+                # Espera a que lleguen todos los renos
+                while contador_rens_arribats < NUM_RENS:
+                    ren_mutex.release()
+                    espera_PareNoel.acquire()
+                    ren_mutex.acquire()
+                ren_mutex.release()
+
+                print("-------> Pare Noel diu: Enganxaré els rens i partiré")
+                for _ in range(NUM_RENS):
+                    enganxar_rens.release()
+                    time.sleep(1)  # Simula enganxar el ren
+                print(
+                    "-------> El Pare Noel ha enganxat els rens, ha carregat les joguines i se'n va")
                 break
+            else:
+                elf_mutex.release()
+
 
 class Elf(threading.Thread):
-    def __init__(self, name):
+    def __init__(self, nom):
         super().__init__()
-        self.name = name
+        self.nom = nom
 
     def run(self):
-        global elf_count, elves_finished
-        print(f"Hola som l'elf {self.name} construiré {NUM_JOGUINES} joguines")# Comença la simulació
-        for i in range(1, NUM_JOGUINES):
-            time.sleep(random.randint(1, 3))  # Simula el tiempo de construcción
-            print(f"{self.name} diu: tinc dubtes amb la joguina {i}")# Entra a la sala de espera
-            elves_waiting_room.acquire()
-            
-            with elf_count_lock:
-                elf_count += 1
-                if elf_count == 3:
-                    print(f"{self.name} diu: Som 3 que tenim dubtes, PARE NOEEEEEL!")# El tercer elf desperta al Pare Noel
-                    santa_sleep.release()  # Despierta a Papá Noel
-            
-            time.sleep(1)  # Simula la espera de ayuda
-            print(f"{self.name} diu: Construeixo la joguina amb ajuda")# Ha aclarit el dubte i surt de la sala de espera
-            elves_waiting_room.release()
-        
-        with elf_count_lock:
-            elves_finished += 1
-            if elves_finished == NUM_ELFS:
-                print(f"{self.name} diu: Som el darrer avisaré al Pare Noel")# El darrer elf ha acabat la seva tercera joguina
-                santa_sleep.release()  # Último elfo avisa a Papá Noel
+        global contador_elfs_dubtes, contador_elfs_acabats
+        print(f"Hola som l'elf {self.nom} construiré {NUM_JOGUINES} joguines")
 
-        print(f"L'elf {self.name} ha fet les seves joguines i acaba <---------")# Ha acabat
+        for i in range(1, NUM_JOGUINES+1):
+            time.sleep(random.randint(0, 3))
+            sala_de_espera_elfs.acquire()
+            print(f"{self.nom} diu: tinc dubtes amb la joguina {i}")
 
-class Reindeer(threading.Thread):
-    def __init__(self, name):
+            elf_mutex.acquire()
+            contador_elfs_dubtes += 1
+            if contador_elfs_dubtes == CAPACITAT_SALA_ESPERA:
+                print(f"{self.nom} diu: Som {
+                      CAPACITAT_SALA_ESPERA} que tenim dubtes, PARE NOEEEEEL!")
+                espera_PareNoel.release()
+            elf_mutex.release()
+
+            espera_resolucion_dudas.acquire()  # Espera la resolución antes de continuar
+            print(f"{self.nom} diu: Construeixo la joguina amb ajuda")
+            time.sleep(random.randint(1, 3))
+            sala_de_espera_elfs.release()
+
+        elf_mutex.acquire()
+        contador_elfs_acabats += 1
+        if contador_elfs_acabats == NUM_ELFS:
+            print(f"{self.nom} diu: Som el darrer avisaré al Pare Noel")
+            espera_PareNoel.release()
+        elf_mutex.release()
+
+        print(f"L'elf {self.nom} ha fet les seves joguines i acaba <---------")
+
+
+class Ren(threading.Thread):
+    def __init__(self, nom):
         super().__init__()
-        self.name = name
+        self.nom = nom
 
     def run(self):
-        global reindeer_count
-        print(f"{self.name} se'n va a pasturar")# Comença la simulació
-        time.sleep(random.randint(5,9))  # Simula el tiempo de llegada del reno
+        global contador_rens_arribats
+        print(f"{self.nom} se'n va a pasturar")
+        time.sleep(random.randint(20, 40))
 
-        with reindeer_count_lock:
-            reindeer_count += 1
-            if reindeer_count == NUM_RENS:
-                print(f"El ren {self.name} diu: Som el darrer en voler podem partir")# Ha arribat el darrer ren
-                santa_sleep.release()  # Despierta a Papá Noel cuando todos los renos están listos
-            else:
-                print(f"El ren {self.name} arriba, {reindeer_count}")# Ha arribat un ren que no és el darrer
+        ren_mutex.acquire()
+        contador_rens_arribats += 1
+        if contador_rens_arribats == NUM_RENS:
+            print(
+                f"El ren {self.nom} diu: Som el darrer en voler podem partir")
+            espera_PareNoel.release()
+        else:
+            print(f"El ren {self.nom} arriba, {contador_rens_arribats}")
+        ren_mutex.release()
 
-        reindeers_arrival.acquire()
-        print(f"El ren {self.name} està enganxat al trineu")# El ren ha estat enganxat i acaba
+        enganxar_rens.acquire()
+        print(f"El ren {self.nom} està enganxat al trineu")
 
-# Inicializar y ejecutar los hilos
-santa = SantaClaus()
-santa.start()
+#####################
 
-elves = [Elf(f"Elf-{i + 1}") for i in range(NUM_ELFS)]
-for elf in elves:
-    elf.start()
 
-reindeers = [Reindeer(f"Reindeer-{i + 1}") for i in range(NUM_RENS)]
-for reindeer in reindeers:
-    reindeer.start()
+def main():
+    pareNoel = PareNoel()
+    pareNoel.start()
 
-# Esperar a que todos los hilos terminen
-for elf in elves:
-    elf.join()
-for reindeer in reindeers:
-    reindeer.join()
-santa.join()
+    rens = [Ren(f"Ren-{i + 1}") for i in range(NUM_RENS)]
+    for ren in rens:
+        ren.start()
+
+    elfs = [Elf(f"Elf-{i + 1}") for i in range(NUM_ELFS)]
+    for elf in elfs:
+        elf.start()
+
+    for elf in elfs:
+        elf.join()
+    for ren in rens:
+        ren.join()
+    pareNoel.join()
+
+
+if __name__ == "__main__":
+    main()
