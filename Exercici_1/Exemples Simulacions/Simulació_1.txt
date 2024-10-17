@@ -1,0 +1,98 @@
+-------> El Pare Noel diu: Estic despert però me'n torn a jeure
+RUDOLPH se'n va a pasturar
+BLITZEN se'n va a pasturar
+DONDER se'n va a pasturar
+CUPID se'n va a pasturar
+COMET se'n va a pasturar
+VIXEN se'n va a pasturar
+PRANCER se'n va a pasturar
+DANCER se'n va a pasturar
+DASHER se'n va a pasturar
+Hola som l'elf Taleasin construiré 3 joguines
+Hola som l'elf Estelar construiré 3 joguines
+Hola som l'elf Adamar construiré 3 joguines
+Hola som l'elf Galather construiré 3 joguines
+Estelar diu: tinc dubtes amb la joguina 1
+Taleasin diu: tinc dubtes amb la joguina 1
+Hola som l'elf Ailduin construiré 3 joguines
+Adamar diu: tinc dubtes amb la joguina 1
+Adamar diu: Som 3 que tenim dubtes, PARE NOEEEEEL!
+-------> El Pare Noel diu: Atendré els dubtes d'aquests 3
+-------> El Pare Noel diu: Estic cansat me'n torn a jeure
+Taleasin diu: Construeixo la joguina amb ajuda
+Estelar diu: Construeixo la joguina amb ajuda
+Adamar diu: Construeixo la joguina amb ajuda
+Hola som l'elf Halafarin construiré 3 joguines
+Galather diu: tinc dubtes amb la joguina 1
+Halafarin diu: tinc dubtes amb la joguina 1
+Estelar diu: tinc dubtes amb la joguina 2
+Estelar diu: Som 3 que tenim dubtes, PARE NOEEEEEL!
+-------> El Pare Noel diu: Atendré els dubtes d'aquests 3
+-------> El Pare Noel diu: Estic cansat me'n torn a jeure
+Galather diu: Construeixo la joguina amb ajuda
+Halafarin diu: Construeixo la joguina amb ajuda
+Estelar diu: Construeixo la joguina amb ajuda
+Ailduin diu: tinc dubtes amb la joguina 1
+Taleasin diu: tinc dubtes amb la joguina 2
+Adamar diu: tinc dubtes amb la joguina 2
+Adamar diu: Som 3 que tenim dubtes, PARE NOEEEEEL!
+-------> El Pare Noel diu: Atendré els dubtes d'aquests 3
+-------> El Pare Noel diu: Estic cansat me'n torn a jeure
+Taleasin diu: Construeixo la joguina amb ajuda
+Adamar diu: Construeixo la joguina amb ajuda
+Ailduin diu: Construeixo la joguina amb ajuda
+Halafarin diu: tinc dubtes amb la joguina 2
+Galather diu: tinc dubtes amb la joguina 2
+Estelar diu: tinc dubtes amb la joguina 3
+Estelar diu: Som 3 que tenim dubtes, PARE NOEEEEEL!
+-------> El Pare Noel diu: Atendré els dubtes d'aquests 3
+-------> El Pare Noel diu: Estic cansat me'n torn a jeure
+Estelar diu: Construeixo la joguina amb ajuda
+Galather diu: Construeixo la joguina amb ajuda
+Halafarin diu: Construeixo la joguina amb ajuda
+El ren DONDER arriba, 1
+El ren PRANCER arriba, 2
+Taleasin diu: tinc dubtes amb la joguina 3
+Ailduin diu: tinc dubtes amb la joguina 2
+L'elf Estelar ha fet les seves joguines i acaba <---------
+Adamar diu: tinc dubtes amb la joguina 3
+Adamar diu: Som 3 que tenim dubtes, PARE NOEEEEEL!
+-------> El Pare Noel diu: Atendré els dubtes d'aquests 3
+-------> El Pare Noel diu: Estic cansat me'n torn a jeure
+Taleasin diu: Construeixo la joguina amb ajuda
+Adamar diu: Construeixo la joguina amb ajuda
+Ailduin diu: Construeixo la joguina amb ajuda
+L'elf Taleasin ha fet les seves joguines i acaba <---------
+Galather diu: tinc dubtes amb la joguina 3
+El ren COMET arriba, 3
+L'elf Adamar ha fet les seves joguines i acaba <---------
+Ailduin diu: tinc dubtes amb la joguina 3
+El ren RUDOLPH arriba, 4
+Halafarin diu: tinc dubtes amb la joguina 3
+Halafarin diu: Som 3 que tenim dubtes, PARE NOEEEEEL!
+-------> El Pare Noel diu: Atendré els dubtes d'aquests 3
+El ren VIXEN arriba, 5
+-------> El Pare Noel diu: Estic cansat me'n torn a jeure
+Halafarin diu: Construeixo la joguina amb ajuda
+Ailduin diu: Construeixo la joguina amb ajuda
+Galather diu: Construeixo la joguina amb ajuda
+L'elf Galather ha fet les seves joguines i acaba <---------
+L'elf Halafarin ha fet les seves joguines i acaba <---------
+Ailduin diu: Som el darrer avisaré al Pare Noel
+L'elf Ailduin ha fet les seves joguines i acaba <---------
+-------> Pare Noel diu: Les joguines estan llestes. I Els rens?
+El ren CUPID arriba, 6
+El ren BLITZEN arriba, 7
+El ren DASHER arriba, 8
+El ren DANCER diu: Som el darrer en voler podem partir
+-------> Pare Noel diu: Enganxaré els rens i partiré
+El ren DONDER està enganxat al trineu
+El ren PRANCER està enganxat al trineu
+El ren COMET està enganxat al trineu
+El ren RUDOLPH està enganxat al trineu
+El ren VIXEN està enganxat al trineu
+El ren CUPID està enganxat al trineu
+El ren BLITZEN està enganxat al trineu
+El ren DASHER està enganxat al trineu
+El ren DANCER està enganxat al trineu
+-------> El Pare Noel ha enganxat els rens, ha carregat les joguines i se'n va
