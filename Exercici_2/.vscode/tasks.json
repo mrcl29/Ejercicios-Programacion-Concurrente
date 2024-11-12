@@ -1,0 +1,36 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Ada with GPR",
+      "type": "shell",
+      "command": "gprbuild",
+      "args": ["-P", "Exercici_2.gpr"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "detail": "Compila el proyecto Ada usando el archivo .gpr"
+    },
+    {
+      "label": "Run Program",
+      "type": "shell",
+      "command": "bin\\exercici2.exe",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "detail": "Ejecuta el programa compilado"
+    }
+  ]
+}

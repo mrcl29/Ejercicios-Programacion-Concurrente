@@ -1,0 +1,71 @@
+Dins la carpeta bin/ està l'executable del programa.
+
+Dins la carpeta src/ estan els arxius del programa.
+
+Per executar el programa desde consola:
+
+> cd scr
+
+> gnatmake exercici2.adb
+
+> exercici2
+
+Simulació:
+
+Simulacio amb 4 clients i 7 Reposadors
+********** La maquina esta preparada
+El reposador 1 comenca a treballar
+El reposador 2 comenca a treballar
+El reposador 3 comenca a treballar
+El reposador 4 comenca a treballar
+El reposador 5 comenca a treballar
+El reposador 6 comenca a treballar
+El reposador 7 comenca a treballar
+Aina diu: Hola, avui fare 8 consumicions
+Bernat diu: Hola, avui fare 4 consumicions
+Bel diu: Hola, avui fare 2 consumicions
+Albert diu: Hola, avui fare 2 consumicions
+++++++++++ El reposador 7 reposa 10 refrescs, ara n'hi ha 10
+---------- Aina agafa el refresc 1 / 8 a la maquina en queden 9
+---------- Bernat agafa el refresc 1 / 4 a la maquina en queden 8
+---------- Bel agafa el refresc 1 / 2 a la maquina en queden 7
+---------- Albert agafa el refresc 1 / 2 a la maquina en queden 6
+---------- Bernat agafa el refresc 2 / 4 a la maquina en queden 5
+---------- Bel agafa el refresc 2 / 2 a la maquina en queden 4
+---------- Aina agafa el refresc 2 / 8 a la maquina en queden 3
+---------- Bernat agafa el refresc 3 / 4 a la maquina en queden 2
+++++++++++ El reposador 6 reposa 8 refrescs, ara n'hi ha 10
+---------- Albert agafa el refresc 2 / 2 a la maquina en queden 9
+++++++++++ El reposador 1 reposa 1 refrescs, ara n'hi ha 10
+---------- Aina agafa el refresc 3 / 8 a la maquina en queden 9
+++++++++++ El reposador 5 reposa 1 refrescs, ara n'hi ha 10
+---------- Bernat agafa el refresc 4 / 4 a la maquina en queden 9
+++++++++++ El reposador 6 reposa 1 refrescs, ara n'hi ha 10
+Bel acaba i se'n va, queden 3 clients >>>>>>>>>>
+Albert acaba i se'n va, queden 2 clients >>>>>>>>>>
+Bernat acaba i se'n va, queden 2 clients >>>>>>>>>>
+---------- Aina agafa el refresc 4 / 8 a la maquina en queden 9
+++++++++++ El reposador 4 reposa 1 refrescs, ara n'hi ha 10
+---------- Aina agafa el refresc 5 / 8 a la maquina en queden 9
+++++++++++ El reposador 2 reposa 1 refrescs, ara n'hi ha 10
+---------- Aina agafa el refresc 6 / 8 a la maquina en queden 9
+++++++++++ El reposador 7 reposa 1 refrescs, ara n'hi ha 10
+---------- Aina agafa el refresc 7 / 8 a la maquina en queden 9
+++++++++++ El reposador 3 reposa 1 refrescs, ara n'hi ha 10
+---------- Aina agafa el refresc 8 / 8 a la maquina en queden 9
+++++++++++ El reposador 1 reposa 1 refrescs, ara n'hi ha 10
+Aina acaba i se'n va, queden 0 clients >>>>>>>>>>
+++++++++++ El reposador 5 diu: No hi ha clients me'n vaig
+++++++++++ El reposador 4 diu: No hi ha clients me'n vaig
+++++++++++ El reposador 6 diu: No hi ha clients me'n vaig
+++++++++++ El reposador 1 diu: No hi ha clients me'n vaig
+++++++++++ El reposador 2 diu: No hi ha clients me'n vaig
+El reposador 2 acaba i se'n va >>>>>>>>>>
+El reposador 1 acaba i se'n va >>>>>>>>>>
+++++++++++ El reposador 7 diu: No hi ha clients me'n vaig
+El reposador 7 acaba i se'n va >>>>>>>>>>
+El reposador 4 acaba i se'n va >>>>>>>>>>
+El reposador 5 acaba i se'n va >>>>>>>>>>
+++++++++++ El reposador 3 diu: No hi ha clients me'n vaig
+El reposador 3 acaba i se'n va >>>>>>>>>>
+El reposador 6 acaba i se'n va >>>>>>>>>>
