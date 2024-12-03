@@ -2,6 +2,7 @@ package main
 
 import (
     "log"
+	"os"
     "time"
     amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -77,14 +78,16 @@ func main() {
         log.Fatalf("Failed to bind queue: %v", err)
     }
 
+    // Bind the alert queue for mistos
     err = ch.QueueBind("fumadorMistos_alert", "", "fumadorXivato_alert", false, nil)
     if err != nil {
         log.Fatalf("Failed to bind queue: %v", err)
     }
 
     log.Println("Sóc fumador. Tinc tabac però me falten mistos")
-    go fumadorMistosAlerta(ch)
-    fumadorMistos(ch, pubCh)
+
+    go fumadorMistosAlerta(ch) // Start alert listener
+    fumadorMistos(ch, pubCh) // Start main process
 }
 
 func fumadorMistos(ch *amqp.Channel, pubCh *amqp.Channel) {
@@ -95,18 +98,19 @@ func fumadorMistos(ch *amqp.Channel, pubCh *amqp.Channel) {
 
     go func() {
         for {
-            err := pubCh.Publish("", "estanquer_requests", false, false, amqp.Publishing{Body: []byte("misto")})
-            if err != nil {
-                log.Fatalf("Failed to publish message: %v", err)
-            }
-            time.Sleep(2 * time.Second)
+			// Publish request for mistos
+			time.Sleep(2 * time.Second) // Simulate some delay
+			if err := pubCh.Publish("", "estanquer_requests", false, false,
+				amqp.Publishing{Body: []byte("misto")}); err != nil {
+				log.Fatalf("Failed to publish message: %v", err)
+			}
         }
     }()
 
     for range msgChan {
-        mistosCount++
-        log.Printf("He agafat el misto %d. Gràcies!", mistosCount)
-    }
+		mistosCount++
+		log.Printf("He agafat el misto %d. Gràcies!", mistosCount)
+	}
 }
 
 func fumadorMistosAlerta(ch *amqp.Channel) {
@@ -117,6 +121,6 @@ func fumadorMistosAlerta(ch *amqp.Channel) {
 
     for range msgChan {
         log.Println("Anem que ve la policia!")
-        return
+        os.Exit(0)
     }
 }
