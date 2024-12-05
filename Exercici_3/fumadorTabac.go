@@ -1,108 +1,91 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-var tabacCount int
+var contador_tabac int
 
 func main() {
-
+	// Connectar amb RabbitMQ
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
-		log.Fatalf("Error connecting RabbitMQ :%s", err)
-		return
+		fmt.Printf("Error en connectar a RabbitMQ: %s", err)
 	}
+	defer conn.Close()
 
-	defer func() {
-		if err := conn.Close(); err != nil {
-			log.Printf("Error closing connection :%s", err)
-		}
-	}()
-
+	// Obrir un canal de comunicació
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Fatalf("Error opening channel :%s", err)
-		return
+		fmt.Printf("Error en obrir el canal: %s", err)
 	}
+	defer ch.Close()
 
-	defer func() {
-		if err := ch.Close(); err != nil {
-			log.Printf("Error closing channel :%s", err)
-		}
-	}()
+	// Declarar cues necessàries
+	_, _ = ch.QueueDeclare("estanquer_peticio", true, false, false, false, nil)
+	_, _ = ch.QueueDeclare("fumadorTabac_resposta", true, false, false, false, nil)
+	_, _ = ch.QueueDeclare("fumadorTabac_alerta", true, false, false, false, nil)
 
-	pubCh, err := conn.Channel()
-	if err != nil {
-		log.Fatalf("Error opening publishing channel :%s", err)
-		return
-	}
+	// Declarar intercanvi fanout per al delator
+	_ = ch.ExchangeDeclare("fumadorXivato_alerta", "fanout", true, false, false, false, nil)
 
-	defer func() {
-		if err := pubCh.Close(); err != nil {
-			log.Printf("Error closing publishing channel :%s", err)
-		}
-	}()
+	// Vincular cua d'alerta a l'intercanvi fanout
+	_ = ch.QueueBind("fumadorTabac_alerta", "", "fumadorXivato_alerta", false, nil)
 
-	// Declare queues
-	_, _ = ch.QueueDeclare("estanquer_requests", true, false, false, false, nil)
+	fmt.Println("")
+	fmt.Println("Sóc fumador. Tinc mistos però me falta tabac")
+	fmt.Println("")
 
-	_, _ = ch.QueueDeclare("fumadorTabac_responses", true, false, false, false, nil)
-
-	_, _ = ch.QueueDeclare("fumadorMistos_responses", true, false, false, false, nil)
-
-	_, _ = ch.QueueDeclare("estanquer_alert", true, false, false, false, nil)
-
-	_, _ = ch.QueueDeclare("fumadorTabac_alert", true, false, false, false, nil)
-
-	// Declare fanout exchange for delator
-	_ = ch.ExchangeDeclare("fumadorXivato_alert", "fanout", true, false, false, false, nil)
-
-	// Bind queues to the fanout exchange
-	_ = ch.QueueBind("estanquer_alert", "", "fumadorXivato_alert", false, nil)
-
-	_ = ch.QueueBind("fumadorTabac_alert", "", "fumadorXivato_alert", false, nil)
-
+	// Iniciar goroutine per gestionar alertes
 	go fumadorTabacAlerta(ch)
-	fumadorTabac(ch, pubCh)
+	// Iniciar procés principal del fumador de tabac
+	fumadorTabac(ch)
 }
 
-func fumadorTabac(ch *amqp.Channel, pubCh *amqp.Channel) {
-	msgChan, err := ch.Consume("fumadorTabac_responses", "", true, false, false, false, nil)
+// Funció principal del fumador de tabac
+func fumadorTabac(ch *amqp.Channel) {
+	// Consumir missatges de la cua de respostes
+	msgChan, err := ch.Consume("fumadorTabac_resposta", "", true, false, false, false, nil)
 	if err != nil {
-		log.Fatalf("Error registering consumer :%s", err)
-		return
+		fmt.Printf("Error en registrar el consumidor: %s", err)
 	}
 
+	// Goroutine per demanar tabac periòdicament
 	go func() {
 		for {
-			time.Sleep(2 * time.Second) // Simulate some delay before requesting more tabaco.
-			if err := pubCh.Publish("", "estanquer_requests", false, false,
+			time.Sleep(2 * time.Second) // Simular un retard abans de demanar més tabac
+			fmt.Println("Me dones més tabac?")
+			if err := ch.Publish("", "estanquer_peticio", false, false,
 				amqp.Publishing{Body: []byte("tabac")}); err != nil {
-				log.Fatalf("Failed to publish message: %v", err)
+				fmt.Printf("Error en publicar el missatge: %v", err)
 			}
 		}
 	}()
 
+	// Processar les respostes rebudes
 	for range msgChan {
-		tabacCount++
-		log.Printf("He agafat el tabac %d. Gràcies!", tabacCount)
+		contador_tabac++
+		fmt.Printf("He agafat el tabac %d. Gràcies!", contador_tabac)
+		fmt.Println(". . .")
 	}
 }
 
+// Funció per gestionar les alertes del fumador de tabac
 func fumadorTabacAlerta(ch *amqp.Channel) {
-	msgChan, err := ch.Consume("fumadorTabac_alert", "",true,false,false,false,nil)
+	// Consumir missatges de la cua d'alertes
+	msgChan, err := ch.Consume("fumadorTabac_alerta", "", true, false, false, false, nil)
 	if err != nil {
-		log.Fatalf("Error registering consumer :%s", err)
-		return
+		fmt.Printf("Error en registrar el consumidor: %s", err)
 	}
 
+	// Processar les alertes rebudes
 	for range msgChan {
-		log.Println("Anem que ve la policia!")
-		os.Exit(0)
+		fmt.Println("")
+		fmt.Println("Anem que ve la policia!")
+		os.Exit(0) // Sortir del programa quan es rep una alerta
 	}
 }

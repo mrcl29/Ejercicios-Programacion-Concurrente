@@ -1,126 +1,90 @@
 package main
 
 import (
-    "log"
+	"fmt"
 	"os"
-    "time"
-    amqp "github.com/rabbitmq/amqp091-go"
+	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-var mistosCount int
+var contador_mistos int
 
 func main() {
-    conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-    if err != nil {
-        log.Fatalf("Failed to connect to RabbitMQ: %v", err)
-    }
-    defer func() {
-        if err := conn.Close(); err != nil {
-            log.Fatalf("Failed to close connection: %v", err)
-        }
-    }()
+	// Connectar amb RabbitMQ
+	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	if err != nil {
+		fmt.Printf("No s'ha pogut connectar a RabbitMQ: %v", err)
+	}
+	defer conn.Close()
 
-    ch, err := conn.Channel()
-    if err != nil {
-        log.Fatalf("Failed to open a channel: %v", err)
-    }
-    defer func() {
-        if err := ch.Close(); err != nil {
-            log.Fatalf("Failed to close channel: %v", err)
-        }
-    }()
+	// Obrir un canal de comunicació
+	ch, err := conn.Channel()
+	if err != nil {
+		fmt.Printf("No s'ha pogut obrir un canal: %v", err)
+	}
+	defer ch.Close()
 
-    pubCh, err := conn.Channel()
-    if err != nil {
-        log.Fatalf("Failed to open a publishing channel: %v", err)
-    }
-    defer func() {
-        if err := pubCh.Close(); err != nil {
-            log.Fatalf("Failed to close publishing channel: %v", err)
-        }
-    }()
+	// Declarar les cues necessàries
+	_, _ = ch.QueueDeclare("estanquer_peticio", true, false, false, false, nil)
+	_, _ = ch.QueueDeclare("fumadorMistos_resposta", true, false, false, false, nil)
+	_, _ = ch.QueueDeclare("fumadorMistos_alerta", true, false, false, false, nil)
 
-    // Declare queues
-    _, err = ch.QueueDeclare("estanquer_requests", true, false, false, false, nil)
-    if err != nil {
-        log.Fatalf("Failed to declare queue: %v", err)
-    }
+	// Declarar l'intercanvi fanout per al delator
+	_ = ch.ExchangeDeclare("fumadorXivato_alerta", "fanout", true, false, false, false, nil)
 
-    _, err = ch.QueueDeclare("fumadorTabac_responses", true, false, false, false, nil)
-    if err != nil {
-        log.Fatalf("Failed to declare queue: %v", err)
-    }
+	// Vincular la cua d'alerta per a mistos a l'intercanvi fanout
+	_ = ch.QueueBind("fumadorMistos_alerta", "", "fumadorXivato_alerta", false, nil)
 
-    _, err = ch.QueueDeclare("fumadorMistos_responses", true, false, false, false, nil)
-    if err != nil {
-        log.Fatalf("Failed to declare queue: %v", err)
-    }
+	fmt.Println("")
+	fmt.Println("Sóc fumador. Tinc tabac però me falten mistos")
+	fmt.Println("")
 
-    _, err = ch.QueueDeclare("estanquer_alert", true, false, false, false, nil)
-    if err != nil {
-        log.Fatalf("Failed to declare queue: %v", err)
-    }
-
-    _, err = ch.QueueDeclare("fumadorMistos_alert", true, false, false, false, nil)
-    if err != nil {
-        log.Fatalf("Failed to declare queue: %v", err)
-    }
-
-    // Declare fanout exchange for delator
-    err = ch.ExchangeDeclare("fumadorXivato_alert", "fanout", true, false, false, false, nil)
-    if err != nil {
-        log.Fatalf("Failed to declare exchange: %v", err)
-    }
-
-    // Bind queues to the fanout exchange
-    err = ch.QueueBind("estanquer_alert", "", "fumadorXivato_alert", false, nil)
-    if err != nil {
-        log.Fatalf("Failed to bind queue: %v", err)
-    }
-
-    // Bind the alert queue for mistos
-    err = ch.QueueBind("fumadorMistos_alert", "", "fumadorXivato_alert", false, nil)
-    if err != nil {
-        log.Fatalf("Failed to bind queue: %v", err)
-    }
-
-    log.Println("Sóc fumador. Tinc tabac però me falten mistos")
-
-    go fumadorMistosAlerta(ch) // Start alert listener
-    fumadorMistos(ch, pubCh) // Start main process
+	go fumadorMistosAlerta(ch) // Iniciar l'escoltador d'alertes en una goroutine separada
+	fumadorMistos(ch)          // Iniciar el procés principal del fumador de mistos
 }
 
-func fumadorMistos(ch *amqp.Channel, pubCh *amqp.Channel) {
-    msgChan, err := ch.Consume("fumadorMistos_responses", "", true, false, false, false, nil)
-    if err != nil {
-        log.Fatalf("Failed to register a consumer: %v", err)
-    }
+// Funció principal del fumador de mistos
+func fumadorMistos(ch *amqp.Channel) {
+	// Configurar el consumidor per rebre respostes
+	msgChan, err := ch.Consume("fumadorMistos_resposta", "", true, false, false, false, nil)
+	if err != nil {
+		fmt.Printf("No s'ha pogut registrar un consumidor: %v", err)
+	}
 
-    go func() {
-        for {
-			// Publish request for mistos
-			time.Sleep(2 * time.Second) // Simulate some delay
-			if err := pubCh.Publish("", "estanquer_requests", false, false,
+	// Goroutine per demanar mistos periòdicament
+	go func() {
+		for {
+			time.Sleep(2 * time.Second) // Simular un retard abans de demanar més mistos
+			fmt.Println("Me dones un altre misto?")
+			// Publicar una petició de misto
+			if err := ch.Publish("", "estanquer_peticio", false, false,
 				amqp.Publishing{Body: []byte("misto")}); err != nil {
-				log.Fatalf("Failed to publish message: %v", err)
+				fmt.Printf("No s'ha pogut publicar el missatge: %v", err)
 			}
-        }
-    }()
+		}
+	}()
 
-    for range msgChan {
-		mistosCount++
-		log.Printf("He agafat el misto %d. Gràcies!", mistosCount)
+	// Processar les respostes rebudes
+	for range msgChan {
+		contador_mistos++
+		fmt.Printf("He agafat el misto %d. Gràcies!", contador_mistos)
+		fmt.Println(". . .")
 	}
 }
 
+// Funció per gestionar les alertes del fumador de mistos
 func fumadorMistosAlerta(ch *amqp.Channel) {
-    msgChan, err := ch.Consume("fumadorMistos_alert", "", true, false, false, false, nil)
-    if err != nil {
-        log.Fatalf("Failed to register a consumer: %v", err)
-    }
+	// Configurar el consumidor per rebre alertes
+	msgChan, err := ch.Consume("fumadorMistos_alerta", "", true, false, false, false, nil)
+	if err != nil {
+		fmt.Printf("No s'ha pogut registrar un consumidor: %v", err)
+	}
 
-    for range msgChan {
-        log.Println("Anem que ve la policia!")
-        os.Exit(0)
-    }
+	// Esperar i processar les alertes
+	for range msgChan {
+		fmt.Println("")
+		fmt.Println("Anem que ve la policia!")
+		os.Exit(0) // Sortir del programa quan es rep una alerta
+	}
 }
