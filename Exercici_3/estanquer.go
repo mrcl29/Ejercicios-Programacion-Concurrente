@@ -7,7 +7,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-var contador_tabac, contador_mistos int
+var contador_tabac_proporcionat, contador_mistos_proporcionat int
 
 func main() {
 	// Connectar amb RabbitMQ
@@ -60,13 +60,13 @@ func estanquer(ch *amqp.Channel) {
 
 	for msg := range msgChan {
 		if string(msg.Body) == "tabac" {
-			contador_tabac++
-			fmt.Printf("He posat el tabac %d damunt la taula", contador_tabac)
+			contador_tabac_proporcionat++
+			fmt.Printf("He posat el tabac %d damunt la taula", contador_tabac_proporcionat)
 			fmt.Println("")
 			_ = ch.Publish("", "fumadorTabac_resposta", false, false, amqp.Publishing{Body: []byte("tabac")})
 		} else if string(msg.Body) == "misto" {
-			contador_mistos++
-			fmt.Printf("He posat el misto %d damunt la taula", contador_mistos)
+			contador_mistos_proporcionat++
+			fmt.Printf("He posat el misto %d damunt la taula", contador_mistos_proporcionat)
 			fmt.Println("")
 			_ = ch.Publish("", "fumadorMistos_resposta", false, false, amqp.Publishing{Body: []byte("misto")})
 		}
