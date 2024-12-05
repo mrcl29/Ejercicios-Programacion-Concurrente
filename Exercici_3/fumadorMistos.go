@@ -47,29 +47,38 @@ func main() {
 // Funció principal del fumador de mistos
 func fumadorMistos(ch *amqp.Channel) {
 	// Configurar el consumidor per rebre respostes
-	msgChan, err := ch.Consume("fumadorMistos_resposta", "", true, false, false, false, nil)
+	msgChan, err := ch.Consume("fumadorMistos_resposta", "", false, false, false, false, nil)
 	if err != nil {
 		fmt.Printf("No s'ha pogut registrar un consumidor: %v", err)
 	}
 
+	// Canal per sincronitzar la petició i la resposta
+	peticio_misto := make(chan bool)
+
 	// Goroutine per demanar mistos periòdicament
 	go func() {
 		for {
-			time.Sleep(2 * time.Second) // Simular un retard abans de demanar més mistos
-			fmt.Println("Me dones un altre misto?")
 			// Publicar una petició de misto
 			if err := ch.Publish("", "estanquer_peticio", false, false,
 				amqp.Publishing{Body: []byte("misto")}); err != nil {
 				fmt.Printf("No s'ha pogut publicar el missatge: %v", err)
 			}
+
+			<-peticio_misto
+			time.Sleep(1 * time.Second) // Simular un retard abans de demanar més mistos
+			fmt.Println("Me dones un altre misto?")
 		}
 	}()
 
 	// Processar les respostes rebudes
-	for range msgChan {
+	for d := range msgChan {
+		time.Sleep(1 * time.Second)
 		contador_mistos++
 		fmt.Printf("He agafat el misto %d. Gràcies!", contador_mistos)
+		fmt.Println("")
 		fmt.Println(". . .")
+		peticio_misto <- true
+		d.Ack(false)
 	}
 }
 

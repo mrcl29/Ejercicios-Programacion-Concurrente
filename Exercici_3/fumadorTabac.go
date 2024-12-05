@@ -49,28 +49,38 @@ func main() {
 // Funció principal del fumador de tabac
 func fumadorTabac(ch *amqp.Channel) {
 	// Consumir missatges de la cua de respostes
-	msgChan, err := ch.Consume("fumadorTabac_resposta", "", true, false, false, false, nil)
+	msgChan, err := ch.Consume("fumadorTabac_resposta", "", false, false, false, false, nil)
 	if err != nil {
 		fmt.Printf("Error en registrar el consumidor: %s", err)
 	}
 
+	// Canal per sincronitzar la petició i la resposta
+	peticio_tabac := make(chan bool)
+
 	// Goroutine per demanar tabac periòdicament
 	go func() {
 		for {
-			time.Sleep(2 * time.Second) // Simular un retard abans de demanar més tabac
-			fmt.Println("Me dones més tabac?")
+			// Publicar una petició de tabac
 			if err := ch.Publish("", "estanquer_peticio", false, false,
 				amqp.Publishing{Body: []byte("tabac")}); err != nil {
 				fmt.Printf("Error en publicar el missatge: %v", err)
 			}
+
+			<-peticio_tabac
+			time.Sleep(1 * time.Second) // Simular un retard abans de demanar més tabac
+			fmt.Println("Me dones més tabac?")
 		}
 	}()
 
 	// Processar les respostes rebudes
-	for range msgChan {
+	for d := range msgChan {
+		time.Sleep(1 * time.Second)
 		contador_tabac++
 		fmt.Printf("He agafat el tabac %d. Gràcies!", contador_tabac)
+		fmt.Println("")
 		fmt.Println(". . .")
+		peticio_tabac <- true
+		d.Ack(false)
 	}
 }
 

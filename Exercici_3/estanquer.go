@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -83,6 +84,17 @@ func estanquerAlerta(ch *amqp.Channel) {
 	for range msgChan {
 		fmt.Println("")
 		fmt.Println("Uyuyuy la policia! Me'n vaig")
+		time.Sleep(1 * time.Second) // Simular retard abans de esborrar cues
+
+		// Borrar las colas
+		_, _ = ch.QueueDelete("estanquer_peticio", false, false, false)
+		_, _ = ch.QueueDelete("fumadorTabac_resposta", false, false, false)
+		_, _ = ch.QueueDelete("fumadorMistos_resposta", false, false, false)
+		_, _ = ch.QueueDelete("estanquer_alerta", false, false, false)
+
+		// Borrar el intercambio
+		_ = ch.ExchangeDelete("fumadorXivato_alerta", false, false)
+
 		fmt.Println(". . . Men duc la taula ! ! ! !")
 		os.Exit(0)
 	}
